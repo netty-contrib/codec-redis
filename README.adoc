@@ -1,4 +1,4 @@
-= Netty 5.x Template Repository for Netty Contrib
+= Netty 5.x Redis Codec Repository for Netty Contrib
 
 * Netty core repository: https://github.com/netty/netty
 * License: Apache-2.0 License
