@@ -10,7 +10,7 @@
         <version>5.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>examples</artifactId>
+    <artifactId>netty-codec-redis-examples</artifactId>
     <version>${parent.version}</version>
 
     <dependencies>

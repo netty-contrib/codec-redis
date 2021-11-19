@@ -10,7 +10,7 @@
         <version>5.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>benchmarks</artifactId>
+    <artifactId>netty-codec-redis-benchmarks</artifactId>
     <version>${parent.version}</version>
 
     <properties>
