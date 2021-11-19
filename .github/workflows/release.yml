@@ -39,7 +39,7 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.name "Netty Project Bot on behalf of $GITHUB_ACTOR"
+          git config user.name "Netty Project Bot on behalf of ${{ github.actor }}"
           git config user.email "netty-project-bot@users.noreply.github.com"
 
       - name: Configure Maven Release Repository
@@ -51,6 +51,10 @@ jobs:
               "id": "sonatype-nexus",
               "username": "${{ secrets.SONATYPE_USERNAME }}",
               "password": "${{ secrets.SONATYPE_PASSWORD }}"
+            },{
+              "id": "github",
+              "username": "${{ github.actor }}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
             }]
 
       # See https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-environment-variable
@@ -67,8 +71,13 @@ jobs:
         run: |
           mvn clean install -B -ntp
 
+      - name: Update versions for release
+        run: |
+          git add .
+          git commit -m 'Update versions for release'
+
       - name: Prepare release with Maven
-        run: mvn -B -ntp --file pom.xml release:prepare -DpreparationGoals=clean -DskipTests '-DnewVersion=${{ github.event.inputs.version }}' '-Dtag=${{ env.tag }}'
+        run: mvn -B -ntp --file pom.xml release:prepare -DpreparationGoals=clean -DskipTests '-DreleaseVersion=${{ github.event.inputs.version }}' '-Dtag=${{ env.tag }}'
 
       - name: Perform release with Maven
         run: mvn -B -ntp --file pom.xml release:perform -Drelease.gpg.keyname=${{ secrets.GPG_KEYNAME }} -Drelease.gpg.passphrase=${{ secrets.GPG_PASSPHRASE }}

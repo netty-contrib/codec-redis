@@ -23,10 +23,10 @@
   </parent>
 
   <groupId>io.netty.contrib</groupId>
-  <artifactId>netty-codec-redis</artifactId>
+  <artifactId>netty-codec-redis-parent</artifactId>
   <version>5.0.0.Final-SNAPSHOT</version>
-  <name>Netty/Codec/Redis</name>
-  <packaging>jar</packaging>
+  <name>Netty/Codec/Redis Parent</name>
+  <packaging>pom</packaging>
   <url>https://netty.io/</url>
   <description>
     Netty is an asynchronous event-driven network application framework for
@@ -49,10 +49,16 @@
 
   <scm>
     <url>https://github.com/netty-contrib/codec-redis</url>
-    <connection>scm:git:git://github.com/netty-contrib/codec-redis.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/netty-contrib/codec-redis.git</developerConnection>
+    <connection>scm:git:https://github.com/netty-contrib/codec-redis.git</connection>
+    <developerConnection>scm:git:https://github.com/netty-contrib/codec-redis.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
+
+  <modules>
+    <module>codec-redis</module>
+    <module>examples</module>
+    <module>benchmarks</module>
+  </modules>
 
   <developers>
     <developer>
@@ -66,9 +72,9 @@
   </developers>
 
   <properties>
-    <javaModuleName>io.netty.contrib.codec.redis</javaModuleName>
     <netty.version>5.0.0.Final-SNAPSHOT</netty.version>
     <netty.build.version>29</netty.build.version>
+    <project.scm.id>github</project.scm.id>
     <release.gpg.keyname />
     <release.gpg.passphrase />
     <test.argLine>-D_</test.argLine>
@@ -266,35 +272,21 @@
     </profile>
   </profiles>
 
-  <dependencies>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-buffer</artifactId>
-      <version>${netty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-transport</artifactId>
-      <version>${netty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-codec</artifactId>
-      <version>${netty.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>3.21.0</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.8.1</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.21.0</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>
 
