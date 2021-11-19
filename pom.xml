@@ -54,12 +54,6 @@
     <tag>HEAD</tag>
   </scm>
 
-  <modules>
-    <module>codec-redis</module>
-    <module>examples</module>
-    <module>benchmarks</module>
-  </modules>
-
   <developers>
     <developer>
       <id>netty.io</id>
@@ -79,6 +73,12 @@
     <release.gpg.passphrase />
     <test.argLine>-D_</test.argLine>
   </properties>
+
+  <modules>
+    <module>codec-redis</module>
+    <module>examples</module>
+    <module>benchmarks</module>
+  </modules>
 
   <build>
     <plugins>
