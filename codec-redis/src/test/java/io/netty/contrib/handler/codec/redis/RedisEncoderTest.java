@@ -24,7 +24,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static io.netty.contrib.handler.codec.redis.RedisCodecTestUtil.byteBufOf;
 import static io.netty.contrib.handler.codec.redis.RedisCodecTestUtil.bytesOf;
@@ -192,4 +195,181 @@ public class RedisEncoderTest {
         }
         return buf;
     }
+
+    @Test
+    public void shouldEncodeNull() {
+        boolean result = channel.writeOutbound(NullRedisMessage.INSTANCE);
+        assertTrue(result);
+
+        ByteBuf written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo(bytesOf("_\r\n"));
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodeBoolean() {
+        boolean result = channel.writeOutbound(BooleanRedisMessage.TRUE);
+        assertTrue(result);
+
+        ByteBuf written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo(bytesOf("#t\r\n"));
+        written.release();
+
+        result = channel.writeOutbound(BooleanRedisMessage.FALSE);
+        assertTrue(result);
+
+        written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo(bytesOf("#f\r\n"));
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodeDouble() {
+        boolean result = channel.writeOutbound(new DoubleRedisMessage(1.23d));
+        assertTrue(result);
+
+        ByteBuf written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo(bytesOf(",1.23\r\n"));
+        written.release();
+
+        result = channel.writeOutbound(DoubleRedisMessage.POSITIVE_INFINITY);
+        assertTrue(result);
+
+        written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo((bytesOf(",inf\r\n")));
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodeBigNumber() {
+        BigNumberRedisMessage message =
+            new BigNumberRedisMessage(bytesOf("3492890328409238509324850943850943825024385"));
+        boolean result = channel.writeOutbound(message);
+        assertTrue(result);
+
+        ByteBuf written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo(bytesOf("(3492890328409238509324850943850943825024385\r\n"));
+
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodeFullBulkErrorString() {
+        ByteBuf bulkString = byteBufOf("bulk\nstring\ntest").retain();
+        int length = bulkString.readableBytes();
+        RedisMessage msg = new FullBulkErrorStringRedisMessage(bulkString);
+
+        boolean result = channel.writeOutbound(msg);
+        assertTrue(result);
+
+        ByteBuf written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo(bytesOf("!" + length + "\r\nbulk\nstring\ntest\r\n"));
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodeBulkErrorStringContent() {
+        RedisMessage header = new BulkErrorStringHeaderRedisMessage(16);
+        RedisMessage body1 = new DefaultBulkStringRedisContent(byteBufOf("bulk\nstr").retain());
+        RedisMessage body2 = new DefaultLastBulkStringRedisContent(byteBufOf("ing\ntest").retain());
+
+        assertTrue(channel.writeOutbound(header));
+        assertTrue(channel.writeOutbound(body1));
+        assertTrue(channel.writeOutbound(body2));
+
+        ByteBuf written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo(bytesOf("!16\r\nbulk\nstring\ntest\r\n"));
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodeFullBulkVerbatimString() {
+        ByteBuf bulkString = byteBufOf("txt:bulk\nstring\ntest").retain();
+        int length = bulkString.readableBytes();
+        RedisMessage msg = new FullBulkVerbatimStringRedisMessage(bulkString);
+
+        boolean result = channel.writeOutbound(msg);
+        assertTrue(result);
+
+        ByteBuf written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo(bytesOf("=" + length + "\r\ntxt:bulk\nstring\ntest\r\n"));
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodeBulkVerbatimStringContent() {
+        RedisMessage header = new BulkVerbatimStringHeaderRedisMessage(20);
+        RedisMessage body1 = new DefaultBulkStringRedisContent(byteBufOf("txt:bulk\nstr").retain());
+        RedisMessage body2 = new DefaultLastBulkStringRedisContent(byteBufOf("ing\ntest").retain());
+
+        assertTrue(channel.writeOutbound(header));
+        assertTrue(channel.writeOutbound(body1));
+        assertTrue(channel.writeOutbound(body2));
+
+        ByteBuf written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo(bytesOf("=20\r\ntxt:bulk\nstring\ntest\r\n"));
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodeSet() {
+        Set<RedisMessage> children = new HashSet<RedisMessage>();
+        children.add(new SimpleStringRedisMessage("apple"));
+        children.add(new FullBulkStringRedisMessage(byteBufOf("orange").retain()));
+        children.add(BooleanRedisMessage.TRUE);
+        children.add(new IntegerRedisMessage(100));
+        RedisMessage msg = new SetRedisMessage(children);
+
+        boolean result = channel.writeOutbound(msg);
+        assertTrue(result);
+
+        ByteBuf written = readAll(channel);
+
+        String encodeResult = new String(bytesOf(written));
+        assertThat(encodeResult).startsWith("~4\r\n");
+        // out-of-order
+        assertThat(encodeResult).contains("$6\r\norange\r\n");
+        assertThat(encodeResult).contains("#t\r\n");
+        assertThat(encodeResult).contains(":100\r\n");
+        assertThat(encodeResult).contains("+apple\r\n");
+
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodeMap() {
+        HashMap<RedisMessage, RedisMessage> map = new HashMap<RedisMessage, RedisMessage>();
+        map.put(new SimpleStringRedisMessage("first"), new IntegerRedisMessage(1));
+        map.put(new SimpleStringRedisMessage("second"), new IntegerRedisMessage(2));
+        MapRedisMessage mapMsg = new MapRedisMessage(map);
+
+        boolean result = channel.writeOutbound(mapMsg);
+        assertTrue(result);
+
+        ByteBuf written = readAll(channel);
+
+        String encodeResult = new String(bytesOf(written));
+        assertThat(encodeResult).startsWith("%2\r\n");
+
+        assertThat(encodeResult).contains("+first\r\n:1\r\n");
+        assertThat(encodeResult).contains("+second\r\n:2\r\n");
+
+        written.release();
+    }
+
+    @Test
+    public void shouldEncodePush() {
+        List<RedisMessage> children = new ArrayList<RedisMessage>();
+        children.add(new FullBulkStringRedisMessage(byteBufOf("foo").retain()));
+        children.add(new FullBulkStringRedisMessage(byteBufOf("bar").retain()));
+        RedisMessage msg = new PushRedisMessage(children);
+
+        boolean result = channel.writeOutbound(msg);
+        assertTrue(result);
+
+        ByteBuf written = readAll(channel);
+        assertThat(bytesOf(written)).isEqualTo((bytesOf(">2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n")));
+        written.release();
+    }
+
 }

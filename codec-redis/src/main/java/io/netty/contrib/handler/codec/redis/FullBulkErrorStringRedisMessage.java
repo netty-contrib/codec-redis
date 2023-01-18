@@ -12,32 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.util.internal.UnstableApi;
 
-/**
- * Integers of <a href="https://redis.io/topics/protocol">RESP</a>.
- */
 @UnstableApi
-public final class IntegerRedisMessage extends AbstractNumberRedisMessage {
+public final class FullBulkErrorStringRedisMessage extends FullBulkStringRedisMessage {
 
     /**
-     * Creates a {@link IntegerRedisMessage} for the given {@code content}.
+     * Creates a {@link FullBulkErrorStringRedisMessage} for the given {@code content}.
      *
-     * @param value the message content.
+     * @param content the content, must not be {@code null}. If content is null or empty,
+     *                use {@link NullRedisMessage#INSTANCE instead of constructor.
      */
-    public IntegerRedisMessage(long value) {
-        super(value);
+    public FullBulkErrorStringRedisMessage(ByteBuf content) {
+        super(content);
     }
-
-    /**
-     * Get long value of this {@link IntegerRedisMessage}.
-     *
-     * @return long value
-     */
-    public long value() {
-        return value.intValue();
-    }
-
 }

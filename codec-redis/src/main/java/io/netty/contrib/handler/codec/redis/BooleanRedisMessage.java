@@ -12,40 +12,48 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.netty.contrib.handler.codec.redis;
 
-import static java.util.Objects.requireNonNull;
+package io.netty.contrib.handler.codec.redis;
 
 import io.netty.util.internal.StringUtil;
 import io.netty.util.internal.UnstableApi;
 
 /**
- * Abstract class for Simple Strings or Errors.
+ * Boolean of <a href="https://github.com/antirez/RESP3/blob/master/spec.md">RESP3</a>.
  */
 @UnstableApi
-public abstract class AbstractStringRedisMessage implements RedisMessage {
+public final class BooleanRedisMessage implements RedisMessage {
 
-    private final String content;
+    private boolean value;
 
-    protected AbstractStringRedisMessage(String content) {
-        this.content = requireNonNull(content, "content");
+    public static final BooleanRedisMessage TRUE = new BooleanRedisMessage(true);
+
+    public static final BooleanRedisMessage FALSE = new BooleanRedisMessage(false);
+
+    /**
+     * Creates a {@link BooleanRedisMessage} for the given {@code value}.
+     *
+     * @param value true or false.
+     */
+    private BooleanRedisMessage(boolean value) {
+        this.value = value;
     }
 
     /**
-     * Get string content of this {@link AbstractStringRedisMessage}.
+     * Get boolean value of this {@link BooleanRedisMessage}.
      *
-     * @return content of this message.
+     * @return boolean value
      */
-    public final String content() {
-        return content;
+    public boolean value() {
+        return value;
     }
 
     @Override
     public String toString() {
         return new StringBuilder(StringUtil.simpleClassName(this))
-                .append('[')
-                .append("content=")
-                .append(content)
-                .append(']').toString();
+            .append('[')
+            .append("value=")
+            .append(value)
+            .append(']').toString();
     }
 }

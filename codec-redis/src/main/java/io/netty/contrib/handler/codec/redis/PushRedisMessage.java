@@ -12,32 +12,37 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
 
 import io.netty.util.internal.UnstableApi;
 
-/**
- * Integers of <a href="https://redis.io/topics/protocol">RESP</a>.
- */
+import java.util.Collections;
+import java.util.List;
+
 @UnstableApi
-public final class IntegerRedisMessage extends AbstractNumberRedisMessage {
+public final class PushRedisMessage extends AbstractCollectionRedisMessage {
 
-    /**
-     * Creates a {@link IntegerRedisMessage} for the given {@code content}.
-     *
-     * @param value the message content.
-     */
-    public IntegerRedisMessage(long value) {
-        super(value);
+    private PushRedisMessage() {
+        super(Collections.<RedisMessage>emptySet());
     }
 
     /**
-     * Get long value of this {@link IntegerRedisMessage}.
+     * Creates a {@link PushRedisMessage} for the given {@code content}.
      *
-     * @return long value
+     * @param children the children.
      */
-    public long value() {
-        return value.intValue();
+    public PushRedisMessage(List<RedisMessage> children) {
+        super(children);
     }
 
+    /**
+     * Get children of this Set. It can be null or empty.
+     *
+     * @return List of {@link RedisMessage}s.
+     */
+    @Override
+    public List<RedisMessage> children() {
+        return (List<RedisMessage>) children;
+    }
 }

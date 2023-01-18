@@ -12,32 +12,36 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
 
 import io.netty.util.internal.UnstableApi;
 
 /**
- * Integers of <a href="https://redis.io/topics/protocol">RESP</a>.
+ * Double of <a href="https://github.com/antirez/RESP3/blob/master/spec.md">RESP3</a>.
  */
 @UnstableApi
-public final class IntegerRedisMessage extends AbstractNumberRedisMessage {
+public final class DoubleRedisMessage extends AbstractNumberRedisMessage {
+
+    public static final DoubleRedisMessage POSITIVE_INFINITY = new DoubleRedisMessage(Double.MAX_VALUE);
+
+    public static final DoubleRedisMessage NEGATIVE_INFINITY = new DoubleRedisMessage(Double.MIN_VALUE);
 
     /**
-     * Creates a {@link IntegerRedisMessage} for the given {@code content}.
+     * Creates a {@link DoubleRedisMessage} for the given {@code content}.
      *
      * @param value the message content.
      */
-    public IntegerRedisMessage(long value) {
+    public DoubleRedisMessage(double value) {
         super(value);
     }
 
     /**
-     * Get long value of this {@link IntegerRedisMessage}.
+     * Get long value of this {@link DoubleRedisMessage}.
      *
-     * @return long value
+     * @return double value
      */
-    public long value() {
-        return value.intValue();
+    public double value() {
+        return value.doubleValue();
     }
-
 }
