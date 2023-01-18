@@ -12,32 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
 
 import io.netty.util.internal.UnstableApi;
 
-/**
- * Integers of <a href="https://redis.io/topics/protocol">RESP</a>.
- */
 @UnstableApi
-public final class IntegerRedisMessage extends AbstractNumberRedisMessage {
+public final class BulkVerbatimStringHeaderRedisMessage extends BulkStringHeaderRedisMessage {
 
     /**
-     * Creates a {@link IntegerRedisMessage} for the given {@code content}.
+     * Creates a {@link BulkVerbatimStringHeaderRedisMessage}.
      *
-     * @param value the message content.
+     * @param bulkStringLength follow content length.
      */
-    public IntegerRedisMessage(long value) {
-        super(value);
+    public BulkVerbatimStringHeaderRedisMessage(int bulkStringLength) {
+        super(bulkStringLength);
+        if (bulkStringLength < 4) {
+            throw new RedisCodecException("Verbatim String Length: " + bulkStringLength
+                    + " must greater than or equal to 4");
+        }
     }
-
-    /**
-     * Get long value of this {@link IntegerRedisMessage}.
-     *
-     * @return long value
-     */
-    public long value() {
-        return value.intValue();
-    }
-
 }

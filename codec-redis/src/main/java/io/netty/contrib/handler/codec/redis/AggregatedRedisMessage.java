@@ -12,32 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
 
-import io.netty.util.internal.UnstableApi;
-
 /**
- * Integers of <a href="https://redis.io/topics/protocol">RESP</a>.
+ * Just a marker interface for Aggregated data types
  */
-@UnstableApi
-public final class IntegerRedisMessage extends AbstractNumberRedisMessage {
-
-    /**
-     * Creates a {@link IntegerRedisMessage} for the given {@code content}.
-     *
-     * @param value the message content.
-     */
-    public IntegerRedisMessage(long value) {
-        super(value);
-    }
-
-    /**
-     * Get long value of this {@link IntegerRedisMessage}.
-     *
-     * @return long value
-     */
-    public long value() {
-        return value.intValue();
-    }
-
+public interface AggregatedRedisMessage extends RedisMessage {
 }

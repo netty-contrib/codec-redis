@@ -12,32 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
 
 import io.netty.util.internal.UnstableApi;
 
 /**
- * Integers of <a href="https://redis.io/topics/protocol">RESP</a>.
+ * Header of Redis Map Message. the length represent the number of field-value pairs,
+ * but the number of redis message.
  */
 @UnstableApi
-public final class IntegerRedisMessage extends AbstractNumberRedisMessage {
+public final class MapHeaderRedisMessage extends AggregatedHeaderRedisMessage {
 
     /**
-     * Creates a {@link IntegerRedisMessage} for the given {@code content}.
+     * Creates a {@link MapHeaderRedisMessage} for the given {@code length}.
      *
-     * @param value the message content.
+     * @param length
      */
-    public IntegerRedisMessage(long value) {
-        super(value);
+    public MapHeaderRedisMessage(long length) {
+        super(length);
     }
-
-    /**
-     * Get long value of this {@link IntegerRedisMessage}.
-     *
-     * @return long value
-     */
-    public long value() {
-        return value.intValue();
-    }
-
 }
