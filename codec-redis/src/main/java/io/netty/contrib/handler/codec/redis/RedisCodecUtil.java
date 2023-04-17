@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Netty Project
+ * Copyright 2016 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License, version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
 
 import io.netty.util.CharsetUtil;
@@ -34,7 +35,7 @@ final class RedisCodecUtil {
      */
     static short makeShort(char first, char second) {
         return PlatformDependent.BIG_ENDIAN_NATIVE_ORDER ?
-                (short) (second << 8 | first) : (short) (first << 8 | second);
+                (short) ((second << 8) | first) : (short) ((first << 8) | second);
     }
 
     /**
@@ -43,10 +44,10 @@ final class RedisCodecUtil {
     static byte[] shortToBytes(short value) {
         byte[] bytes = new byte[2];
         if (PlatformDependent.BIG_ENDIAN_NATIVE_ORDER) {
-            bytes[1] = (byte) (value >> 8 & 0xff);
+            bytes[1] = (byte) ((value >> 8) & 0xff);
             bytes[0] = (byte) (value & 0xff);
         } else {
-            bytes[0] = (byte) (value >> 8 & 0xff);
+            bytes[0] = (byte) ((value >> 8) & 0xff);
             bytes[1] = (byte) (value & 0xff);
         }
         return bytes;

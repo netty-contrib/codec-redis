@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Netty Project
+ * Copyright 2016 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License,
  * version 2.0 (the "License"); you may not use this file except in compliance
@@ -14,6 +14,6 @@
  * under the License.
  */
 /**
- * Benchmarks for {@link io.netty.contrib.handler.codec.redis}.
+ * Benchmarks for {@link io.netty.handler.codec.redis}.
  */
 package io.netty.contrib.microbenchmarks.redis;

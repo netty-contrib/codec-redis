@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Netty Project
+ * Copyright 2016 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License, version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
@@ -12,7 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -20,10 +24,6 @@ import io.netty.util.CharsetUtil;
 import io.netty.util.collection.LongObjectHashMap;
 import io.netty.util.collection.LongObjectMap;
 import io.netty.util.internal.UnstableApi;
-
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A default fixed redis message pool.
@@ -94,9 +94,9 @@ public final class FixedRedisMessagePool implements RedisMessagePool {
      * Creates a {@link FixedRedisMessagePool} instance.
      */
     private FixedRedisMessagePool() {
-        keyToSimpleStrings = new EnumMap<RedisReplyKey, SimpleStringRedisMessage>(RedisReplyKey.class);
-        stringToSimpleStrings = new HashMap<>(RedisReplyKey.values().length, 1.0f);
-        byteBufToSimpleStrings = new HashMap<>(RedisReplyKey.values().length, 1.0f);
+        keyToSimpleStrings = new HashMap<RedisReplyKey, SimpleStringRedisMessage>(RedisReplyKey.values().length, 1.0f);
+        stringToSimpleStrings = new HashMap<String, SimpleStringRedisMessage>(RedisReplyKey.values().length, 1.0f);
+        byteBufToSimpleStrings = new HashMap<ByteBuf, SimpleStringRedisMessage>(RedisReplyKey.values().length, 1.0f);
         for (RedisReplyKey value : RedisReplyKey.values()) {
             ByteBuf key = Unpooled.unreleasableBuffer(Unpooled.wrappedBuffer(
                 value.name().getBytes(CharsetUtil.UTF_8))).asReadOnly();
@@ -107,9 +107,9 @@ public final class FixedRedisMessagePool implements RedisMessagePool {
             byteBufToSimpleStrings.put(key, message);
         }
 
-        keyToErrors = new EnumMap<RedisErrorKey, ErrorRedisMessage>(RedisErrorKey.class);
-        stringToErrors = new HashMap<>(RedisErrorKey.values().length, 1.0f);
-        byteBufToErrors = new HashMap<>(RedisErrorKey.values().length, 1.0f);
+        keyToErrors = new HashMap<RedisErrorKey, ErrorRedisMessage>(RedisErrorKey.values().length, 1.0f);
+        stringToErrors = new HashMap<String, ErrorRedisMessage>(RedisErrorKey.values().length, 1.0f);
+        byteBufToErrors = new HashMap<ByteBuf, ErrorRedisMessage>(RedisErrorKey.values().length, 1.0f);
         for (RedisErrorKey value : RedisErrorKey.values()) {
             ByteBuf key = Unpooled.unreleasableBuffer(Unpooled.wrappedBuffer(
                 value.toString().getBytes(CharsetUtil.UTF_8))).asReadOnly();
@@ -120,9 +120,9 @@ public final class FixedRedisMessagePool implements RedisMessagePool {
             byteBufToErrors.put(key, message);
         }
 
-        byteBufToIntegers = new HashMap<>(SIZE_CACHED_INTEGER_NUMBER, 1.0f);
-        longToIntegers = new LongObjectHashMap<>(SIZE_CACHED_INTEGER_NUMBER, 1.0f);
-        longToByteBufs = new LongObjectHashMap<>(SIZE_CACHED_INTEGER_NUMBER, 1.0f);
+        byteBufToIntegers = new HashMap<ByteBuf, IntegerRedisMessage>(SIZE_CACHED_INTEGER_NUMBER, 1.0f);
+        longToIntegers = new LongObjectHashMap<IntegerRedisMessage>(SIZE_CACHED_INTEGER_NUMBER, 1.0f);
+        longToByteBufs = new LongObjectHashMap<byte[]>(SIZE_CACHED_INTEGER_NUMBER, 1.0f);
         for (long value = MIN_CACHED_INTEGER_NUMBER; value < MAX_CACHED_INTEGER_NUMBER; value++) {
             byte[] keyBytes = RedisCodecUtil.longToAsciiBytes(value);
             ByteBuf keyByteBuf = Unpooled.unreleasableBuffer(Unpooled.wrappedBuffer(keyBytes)).asReadOnly();

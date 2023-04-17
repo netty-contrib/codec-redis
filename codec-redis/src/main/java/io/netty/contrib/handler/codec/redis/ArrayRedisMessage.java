@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Netty Project
+ * Copyright 2016 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License, version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
@@ -12,17 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
-
-import static java.util.Objects.requireNonNull;
-
-import io.netty.util.AbstractReferenceCounted;
-import io.netty.util.ReferenceCountUtil;
-import io.netty.util.internal.StringUtil;
-import io.netty.util.internal.UnstableApi;
 
 import java.util.Collections;
 import java.util.List;
+
+import io.netty.util.AbstractReferenceCounted;
+import io.netty.util.ReferenceCountUtil;
+import io.netty.util.internal.ObjectUtil;
+import io.netty.util.internal.StringUtil;
+import io.netty.util.internal.UnstableApi;
 
 /**
  * Arrays of <a href="https://redis.io/topics/protocol">RESP</a>.
@@ -43,7 +43,7 @@ public class ArrayRedisMessage extends AbstractReferenceCounted implements Redis
      */
     public ArrayRedisMessage(List<RedisMessage> children) {
         // do not retain here. children are already retained when created.
-        this.children = requireNonNull(children, "children");
+        this.children = ObjectUtil.checkNotNull(children, "children");
     }
 
     /**
@@ -173,4 +173,5 @@ public class ArrayRedisMessage extends AbstractReferenceCounted implements Redis
             return "EmptyArrayRedisMessage";
         }
     };
+
 }

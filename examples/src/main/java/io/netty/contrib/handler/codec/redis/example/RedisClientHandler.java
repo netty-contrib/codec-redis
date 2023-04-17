@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Netty Project
+ * Copyright 2016 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License,
  * version 2.0 (the "License"); you may not use this file except in compliance
@@ -16,9 +16,13 @@
 
 package io.netty.contrib.handler.codec.redis.example;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.CodecException;
 import io.netty.contrib.handler.codec.redis.ArrayRedisMessage;
 import io.netty.contrib.handler.codec.redis.ErrorRedisMessage;
@@ -28,25 +32,21 @@ import io.netty.contrib.handler.codec.redis.RedisMessage;
 import io.netty.contrib.handler.codec.redis.SimpleStringRedisMessage;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.Future;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An example Redis client handler. This handler read input from STDIN and write output to STDOUT.
  */
-public class RedisClientHandler implements ChannelHandler {
+public class RedisClientHandler extends ChannelDuplexHandler {
 
     @Override
-    public Future<Void> write(ChannelHandlerContext ctx, Object msg) {
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
         String[] commands = ((String) msg).split("\\s+");
-        List<RedisMessage> children = new ArrayList<>(commands.length);
+        List<RedisMessage> children = new ArrayList<RedisMessage>(commands.length);
         for (String cmdString : commands) {
             children.add(new FullBulkStringRedisMessage(ByteBufUtil.writeUtf8(ctx.alloc(), cmdString)));
         }
         RedisMessage request = new ArrayRedisMessage(children);
-        return ctx.write(request);
+        ctx.write(request, promise);
     }
 
     @Override

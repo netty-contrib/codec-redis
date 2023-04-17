@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Netty Project
+ * Copyright 2016 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License, version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
@@ -15,23 +15,23 @@
 
 package io.netty.contrib.handler.codec.redis.example;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.MultithreadEventLoopGroup;
-import io.netty.channel.nio.NioHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.contrib.handler.codec.redis.RedisArrayAggregator;
 import io.netty.contrib.handler.codec.redis.RedisBulkStringAggregator;
 import io.netty.contrib.handler.codec.redis.RedisDecoder;
 import io.netty.contrib.handler.codec.redis.RedisEncoder;
-import io.netty.util.concurrent.Future;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import io.netty.util.concurrent.GenericFutureListener;
 
 /**
  * Simple Redis client that demonstrates Redis commands against a Redis server.
@@ -41,7 +41,7 @@ public class RedisClient {
     private static final int PORT = Integer.parseInt(System.getProperty("port", "6379"));
 
     public static void main(String[] args) throws Exception {
-        EventLoopGroup group = new MultithreadEventLoopGroup(NioHandler.newFactory());
+        EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
             b.group(group)
@@ -59,11 +59,11 @@ public class RedisClient {
              });
 
             // Start the connection attempt.
-            Channel ch = b.connect(HOST, PORT).get();
+            Channel ch = b.connect(HOST, PORT).sync().channel();
 
             // Read commands from the stdin.
             System.out.println("Enter Redis commands (quit to end)");
-            Future<Void> lastWriteFuture = null;
+            ChannelFuture lastWriteFuture = null;
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
             for (;;) {
                 final String input = in.readLine();
@@ -71,16 +71,18 @@ public class RedisClient {
                 if (line == null || "quit".equalsIgnoreCase(line)) { // EOF or "quit"
                     ch.close().sync();
                     break;
-                }
-                if (line.isEmpty()) { // skip `enter` or `enter` with spaces.
+                } else if (line.isEmpty()) { // skip `enter` or `enter` with spaces.
                     continue;
                 }
                 // Sends the received line to the server.
                 lastWriteFuture = ch.writeAndFlush(line);
-                lastWriteFuture.addListener(future -> {
-                    if (future.isFailed()) {
-                        System.err.print("write failed: ");
-                        future.cause().printStackTrace(System.err);
+                lastWriteFuture.addListener(new GenericFutureListener<ChannelFuture>() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if (!future.isSuccess()) {
+                            System.err.print("write failed: ");
+                            future.cause().printStackTrace(System.err);
+                        }
                     }
                 });
             }
