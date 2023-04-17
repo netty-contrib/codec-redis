@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Netty Project
+ * Copyright 2016 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License, version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
@@ -12,10 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
 
-import static java.util.Objects.requireNonNull;
-
+import io.netty.util.internal.ObjectUtil;
 import io.netty.util.internal.StringUtil;
 import io.netty.util.internal.UnstableApi;
 
@@ -28,7 +28,7 @@ public abstract class AbstractStringRedisMessage implements RedisMessage {
     private final String content;
 
     AbstractStringRedisMessage(String content) {
-        this.content = requireNonNull(content, "content");
+        this.content = ObjectUtil.checkNotNull(content, "content");
     }
 
     /**
@@ -48,4 +48,5 @@ public abstract class AbstractStringRedisMessage implements RedisMessage {
                 .append(content)
                 .append(']').toString();
     }
+
 }

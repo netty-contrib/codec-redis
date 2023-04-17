@@ -24,7 +24,7 @@
 
   <groupId>io.netty.contrib</groupId>
   <artifactId>netty-codec-redis-parent</artifactId>
-  <version>5.0.0.Final-SNAPSHOT</version>
+  <version>4.1.92.Final-SNAPSHOT</version>
   <name>Netty/Codec/Redis Parent</name>
   <packaging>pom</packaging>
   <url>https://netty.io/</url>
@@ -66,7 +66,7 @@
   </developers>
 
   <properties>
-    <netty.version>5.0.0.Final-SNAPSHOT</netty.version>
+    <netty.version>4.1.92.Final-SNAPSHOT</netty.version>
     <netty.build.version>29</netty.build.version>
     <project.scm.id>github</project.scm.id>
     <release.gpg.keyname />

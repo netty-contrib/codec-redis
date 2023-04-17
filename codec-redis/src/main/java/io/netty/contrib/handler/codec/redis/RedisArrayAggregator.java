@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Netty Project
+ * Copyright 2016 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License, version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
@@ -12,18 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package io.netty.contrib.handler.codec.redis;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.CodecException;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.UnstableApi;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
 
 /**
  * Aggregates {@link RedisMessage} parts into {@link ArrayRedisMessage}. This decoder
@@ -32,10 +33,10 @@ import java.util.List;
 @UnstableApi
 public final class RedisArrayAggregator extends MessageToMessageDecoder<RedisMessage> {
 
-    private final Deque<AggregateState> depths = new ArrayDeque<>(4);
+    private final Deque<AggregateState> depths = new ArrayDeque<AggregateState>(4);
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, RedisMessage msg) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, RedisMessage msg, List<Object> out) throws Exception {
         if (msg instanceof ArrayHeaderRedisMessage) {
             msg = decodeRedisArrayHeader((ArrayHeaderRedisMessage) msg);
             if (msg == null) {
@@ -54,12 +55,12 @@ public final class RedisArrayAggregator extends MessageToMessageDecoder<RedisMes
                 msg = new ArrayRedisMessage(current.children);
                 depths.pop();
             } else {
-                // Not aggregated yet. Try next time.
+                // not aggregated yet. try next time.
                 return;
             }
         }
 
-        ctx.fireChannelRead(msg);
+        out.add(msg);
     }
 
     private RedisMessage decodeRedisArrayHeader(ArrayHeaderRedisMessage header) {
@@ -86,7 +87,7 @@ public final class RedisArrayAggregator extends MessageToMessageDecoder<RedisMes
         private final List<RedisMessage> children;
         AggregateState(int length) {
             this.length = length;
-            children = new ArrayList<>(length);
+            this.children = new ArrayList<RedisMessage>(length);
         }
     }
 }

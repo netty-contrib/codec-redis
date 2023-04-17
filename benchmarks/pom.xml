@@ -7,14 +7,14 @@
     <parent>
         <groupId>io.netty.contrib</groupId>
         <artifactId>netty-codec-redis-parent</artifactId>
-        <version>5.0.0.Final-SNAPSHOT</version>
+        <version>4.1.92.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>netty-codec-redis-benchmarks</artifactId>
     <version>${parent.version}</version>
 
     <properties>
-        <jmh.version>1.33</jmh.version>
+        <jmh.version>1.36</jmh.version>
     </properties>
 
     <build>

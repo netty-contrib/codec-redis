@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Netty Project
+ * Copyright 2016 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License,
  * version 2.0 (the "License"); you may not use this file except in compliance
@@ -15,17 +15,9 @@
  */
 package io.netty.contrib.microbenchmarks.redis;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.buffer.Unpooled;
-import io.netty.buffer.UnpooledByteBufAllocator;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.contrib.handler.codec.redis.ArrayRedisMessage;
-import io.netty.contrib.handler.codec.redis.FullBulkStringRedisMessage;
-import io.netty.contrib.handler.codec.redis.RedisEncoder;
-import io.netty.contrib.handler.codec.redis.RedisMessage;
-import io.netty.microbench.channel.EmbeddedChannelWriteReleaseHandlerContext;
-import io.netty.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
@@ -38,15 +30,25 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledByteBufAllocator;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.contrib.handler.codec.redis.ArrayRedisMessage;
+import io.netty.contrib.handler.codec.redis.FullBulkStringRedisMessage;
+import io.netty.contrib.handler.codec.redis.RedisEncoder;
+import io.netty.contrib.handler.codec.redis.RedisMessage;
+import io.netty.microbench.channel.EmbeddedChannelWriteReleaseHandlerContext;
+import io.netty.microbench.util.AbstractMicrobenchmark;
 
 @State(Scope.Benchmark)
 @Fork(1)
 @Threads(1)
 @Warmup(iterations = 5)
 @Measurement(iterations = 5)
-public class RedisEncoderBenchmark {
+public class RedisEncoderBenchmark extends AbstractMicrobenchmark {
     private RedisEncoder encoder;
     private ByteBuf content;
     private ChannelHandlerContext context;
@@ -54,6 +56,9 @@ public class RedisEncoderBenchmark {
 
     @Param({ "true", "false" })
     public boolean pooledAllocator;
+
+    @Param({ "true", "false" })
+    public boolean voidPromise;
 
     @Param({ "50", "200", "1000" })
     public int arraySize;
@@ -65,7 +70,7 @@ public class RedisEncoderBenchmark {
         content.writeBytes(bytes);
         ByteBuf testContent = Unpooled.unreleasableBuffer(content.asReadOnly());
 
-        List<RedisMessage> rList = new ArrayList<>(arraySize);
+        List<RedisMessage> rList = new ArrayList<RedisMessage>(arraySize);
         for (int i = 0; i < arraySize; ++i) {
             rList.add(new FullBulkStringRedisMessage(testContent));
         }
@@ -75,20 +80,23 @@ public class RedisEncoderBenchmark {
                 UnpooledByteBufAllocator.DEFAULT, encoder) {
             @Override
             protected void handleException(Throwable t) {
-                throw new AssertionError("Unexpected exception", t);
+                handleUnexpectedException(t);
             }
         };
     }
 
     @TearDown(Level.Trial)
-    public void tearDown() {
-        redisArray.release();
+    public void teardown() {
         content.release();
         content = null;
     }
 
     @Benchmark
-    public Future<Void> writeArray() {
-        return encoder.write(context, redisArray.retain());
+    public void writeArray() throws Exception {
+        encoder.write(context, redisArray.retain(), newPromise());
+    }
+
+    private ChannelPromise newPromise() {
+        return voidPromise ? context.voidPromise() : context.newPromise();
     }
 }

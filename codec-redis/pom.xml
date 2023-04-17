@@ -7,10 +7,10 @@
     <parent>
         <groupId>io.netty.contrib</groupId>
         <artifactId>netty-codec-redis-parent</artifactId>
-        <version>5.0.0.Final-SNAPSHOT</version>
+        <version>4.1.92.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>codec-redis</artifactId>
+    <artifactId>netty-codec-redis</artifactId>
     <version>${parent.version}</version>
     <name>Netty/Codec/Redis</name>
     <packaging>jar</packaging>
